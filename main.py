@@ -279,8 +279,7 @@ class Game:
                         self.enter_tower(idx)
                 except ValueError:
                     pass
-
-
+                
 # ================= ЗАПУСК =================
 
 if __name__ == "__main__":
