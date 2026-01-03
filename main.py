@@ -5,6 +5,10 @@ import os
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def health_bar(current, max_hp, length=20):
+    filled = int(current / max_hp * length) if max_hp > 0 else 0
+    bar = '█' * filled + ' ' * (length - filled)
+    return f"[{bar}] {current}/{max_hp}"
 
 # ================= ПЕРСОНАЖ =================
 
@@ -26,14 +30,30 @@ class Character:
     def take(self, dmg):
         self.hp -= dmg
 
-
 # ================= ГЕРОЙ =================
 
 class Hero(Character):
-    def __init__(self, name):
-        super().__init__(name, 40, (5, 8), 10)
+    def __init__(self, name, class_name):
+        if class_name == "Воин":
+            hp = 50
+            attack = (5, 10)
+            luck = 5
+        elif class_name == "Маг":
+            hp = 30
+            attack = (7, 12)
+            luck = 10
+        elif class_name == "Разбойник":
+            hp = 40
+            attack = (4, 8)
+            luck = 20
+        else:
+            hp = 40
+            attack = (5, 8)
+            luck = 10
+
+        super().__init__(name, hp, attack, luck, level=1)
+        self.class_name = class_name
         self.exp = 0
-        self.level = 1
         self.next_exp = 50
 
     def gain_exp(self, value):
@@ -51,7 +71,6 @@ class Hero(Character):
         self.luck += 2
         print(f"\n⭐ УРОВЕНЬ ПОВЫШЕН! Теперь {self.level}")
         input("Enter...")
-
 
 # ================= ДАННЫЕ МИРА =================
 
@@ -71,7 +90,6 @@ MOBS = {
     5: ["Аватар Пустоты"]
 }
 
-
 # ================= ИГРА =================
 
 class Game:
@@ -79,6 +97,7 @@ class Game:
         self.hero = None
         self.inv = {"Зелье ХП": 2}
         self.log = []
+        self.cleared_towers = set()  # индексы зачищенных башен (0..4)
 
     # ---------- КАРТА ----------
 
@@ -86,9 +105,13 @@ class Game:
         clear()
         print("🗺 КАРТА МИРА\n")
         for i, t in enumerate(TOWERS, 1):
-            print(f"{i}. {t['name']} (сложность {t['diff']})")
+            if (i-1) in self.cleared_towers:
+                status = "ЗАЧИЩЕНА"
+            else:
+                status = f"сложность {t['diff']}"
+            print(f"{i}. {t['name']} ({status})")
         print("\n6. Отдых")
-        print("7. Инвентарь")
+        print("7. Инвентарь и персонаж")
         print("0. Выход")
 
         return input("\n>>> ")
@@ -120,19 +143,21 @@ class Game:
         name = random.choice(MOBS[diff])
         hp = 20 + diff * 10 + self.hero.level * 3
         atk = (diff * 3, diff * 5)
-        return Character(name, hp, atk, luck=5 + diff * 2)
+        level = diff
+        return Character(name, hp, atk, luck=5 + diff * 2, level=level)
 
     def battle(self, enemy):
         self.log = [f"⚔ Битва с {enemy.name}"]
 
         while self.hero.hp > 0 and enemy.hp > 0:
             clear()
-            print(f"{self.hero.name} HP {self.hero.hp}/{self.hero.max_hp} | LVL {self.hero.level}")
-            print(f"{enemy.name} HP {enemy.hp}/{enemy.max_hp}")
+            print(f"{self.hero.name} LVL {self.hero.level} {health_bar(self.hero.hp, self.hero.max_hp)}")
+            print(f"{enemy.name} LVL {enemy.level} {health_bar(enemy.hp, enemy.max_hp)}")
             print("-" * 40)
             for l in self.log[-8:]:
                 print(l)
-            print("\n1.Атака 2.Блок 3.Зелье")
+            potions = self.inv.get("Зелье ХП", 0)
+            print(f"\n1. Атака  2. Блок  3. Зелье ({potions})")
 
             cmd = input(">>> ")
 
@@ -146,7 +171,7 @@ class Game:
                 self.hero.block = True
                 self.log.append("Вы в защите")
 
-            elif cmd == "3" and self.inv.get("Зелье ХП", 0) > 0:
+            elif cmd == "3" and potions > 0:
                 self.hero.hp = min(self.hero.max_hp, self.hero.hp + 30)
                 self.inv["Зелье ХП"] -= 1
                 self.log.append("Вы выпили зелье")
@@ -154,14 +179,15 @@ class Game:
             if enemy.hp <= 0:
                 break
 
-            dmg, _ = enemy.hit()
+            dmg, crit = enemy.hit()
             if self.hero.block:
                 dmg //= 2
-            self.hero.hp -= dmg
-            self.log.append(f"{enemy.name} ударил на {dmg}")
+            self.hero.take(dmg)
+            self.log.append(f"{enemy.name} ударил на {dmg}{' КРИТ' if crit else ''}")
 
         if self.hero.hp <= 0:
             print("💀 Вы погибли")
+            input("Enter...")
             exit()
 
         exp = 20 + enemy.level * 10
@@ -179,22 +205,64 @@ class Game:
 
     # ---------- БАШНЯ ----------
 
-    def enter_tower(self, tower):
+    def enter_tower(self, tower_idx):
+        tower = TOWERS[tower_idx]
+        
+        if tower_idx in self.cleared_towers:
+            print(f"\n{ tower['name'] } уже зачищена.")
+            input("Enter...")
+            return
+
         floors = tower["diff"] + 2
+        print(f"\nВы входите в {tower['name']}... этажей: {floors}\n")
+        time.sleep(1.2)
+
         for f in range(1, floors + 1):
+            clear()
+            print(f"Этаж {f}/{floors}")
             enemy = self.spawn_enemy(tower["diff"])
             self.battle(enemy)
 
         reward = random.choice(tower["loot"])
         self.inv[reward] = self.inv.get(reward, 0) + 1
+        self.cleared_towers.add(tower_idx)
+
         print(f"\n🏆 Башня зачищена! Получено: {reward}")
         input("Enter...")
+
+    # ---------- ПЕРСОНАЖ И ИНВЕНТАРЬ ----------
+
+    def show_character(self):
+        clear()
+        print(f"Персонаж: {self.hero.name} ({self.hero.class_name})")
+        print(f"Уровень: {self.hero.level}")
+        print(f"HP: {health_bar(self.hero.hp, self.hero.max_hp)}")
+        print(f"Атака: {self.hero.attack[0]}-{self.hero.attack[1]}")
+        print(f"Удача: {self.hero.luck}%")
+        print(f"EXP: {self.hero.exp}/{self.hero.next_exp}")
+        print("\nИнвентарь:")
+        for item, count in self.inv.items():
+            print(f"• {item}: {count}")
+        input("\nEnter...")
 
     # ---------- СТАРТ ----------
 
     def start(self):
         name = input("Имя героя: ") or "Странник"
-        self.hero = Hero(name)
+        print("\nВыберите класс:")
+        print("1. Воин (высокое HP, средняя атака, низкая удача)")
+        print("2. Маг (низкое HP, высокая атака, средняя удача)")
+        print("3. Разбойник (среднее HP, средняя атака, высокая удача)")
+        cmd = input(">>> ")
+        if cmd == "1":
+            class_name = "Воин"
+        elif cmd == "2":
+            class_name = "Маг"
+        elif cmd == "3":
+            class_name = "Разбойник"
+        else:
+            class_name = "Воин"
+        self.hero = Hero(name, class_name)
 
         while True:
             cmd = self.map_menu()
@@ -203,13 +271,14 @@ class Game:
             elif cmd == "6":
                 self.rest()
             elif cmd == "7":
-                clear()
-                print(self.inv)
-                input("Enter...")
+                self.show_character()
             else:
-                idx = int(cmd) - 1
-                if 0 <= idx < 5:
-                    self.enter_tower(TOWERS[idx])
+                try:
+                    idx = int(cmd) - 1
+                    if 0 <= idx < len(TOWERS):
+                        self.enter_tower(idx)
+                except ValueError:
+                    pass
 
 
 # ================= ЗАПУСК =================
