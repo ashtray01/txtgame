@@ -55,6 +55,12 @@ class Game:
         if header:
             self.say(header)
 
+    def scene_art(self, text, header=""):
+        self.clear_fn()
+        self.say(text)
+        if header:
+            self.say(header)
+
     def wait(self, sec=0.6):
         self.sleep(sec)
 
@@ -82,7 +88,7 @@ class Game:
         self.save()
 
         while self.hero.hp > 0 and enemy.hp > 0:
-            self.scene("BATTLE_BOSS" if is_boss else "BATTLE")
+            self.scene_art(art.get_enemy(enemy.name) or art.get("BATTLE_BOSS" if is_boss else "BATTLE"))
             self.say(f"{self.hero.name} LVL {self.hero.level} {health_bar(self.hero.hp, self.hero.max_hp)}")
             self.say(f"{enemy.name} LVL {enemy.level} {health_bar(enemy.hp, enemy.max_hp)}")
             self.say("-" * 42)
@@ -196,7 +202,7 @@ class Game:
     # ---------- поражение ----------
 
     def defeat(self):
-        self.scene("GAME_OVER", "💀 Вы погибли...")
+        self.scene_art(art.get_extra("DEATH"), "💀 Вы погибли...")
         if os.path.exists(self.save_path):
             ans = self.ask("Восстановиться из последнего сохранения? (1 да / 0 выйти) ")
             if ans == "1" and self.load():
@@ -232,14 +238,14 @@ class Game:
         self.inv[tower["relic"]] = self.inv.get(tower["relic"], 0) + 1
         self.cleared.add(idx)
         self.save()
-        self.scene("REWARD")
+        self.scene_art(art.get_relic(tower["relic"]) or art.get("REWARD"))
         self.say(f"🏆 Башня зачищена! Получена реликвия: {tower['relic']}")
         self.ask("Enter...")
         if len(self.cleared) == len(TOWERS):
             self.victory()
 
     def victory(self):
-        self.scene("VICTORY", "👑 ВЫ СОБРАЛИ ВСЕ ПЯТЬ РЕЛИКВИЙ!")
+        self.scene_art(art.get_extra("VICTORY") or art.get("VICTORY"), "👑 ВЫ СОБРАЛИ ВСЕ ПЯТЬ РЕЛИКВИЙ!")
         self.say("Древнее зло повержено. Мир спасён. Слава герою!")
         ans = self.ask("1. Новая игра  0. Выход: ")
         if ans == "1":
@@ -250,7 +256,7 @@ class Game:
     # ---------- отдых ----------
 
     def rest(self):
-        self.scene("REST")
+        self.scene_art(art.get_extra("CAMP"))
         supplies = self.inv.get("Припасы", 0)
         if supplies <= 0:
             self.say("Нет припасов, чтобы разбить лагерь.")
@@ -279,7 +285,7 @@ class Game:
 
     def shop(self):
         while True:
-            self.scene("SHOP", "🏪 Лавка странствующего торговца")
+            self.scene_art(art.get_extra("SHOPKEEPER"), "🏪 Лавка странствующего торговца")
             self.say(f"Золото: {self.gold}")
             self.say("")
             self.say("Товары:")
@@ -338,7 +344,7 @@ class Game:
 
     def show_character(self):
         while True:
-            self.scene("CHARACTER")
+            self.scene_art(art.get_hero(self.hero.class_name) or art.get("CHARACTER"))
             h = self.hero
             self.say(f"{h.name} — {h.class_name}")
             self.say(f"Уровень: {h.level}   EXP: {h.exp}/{h.next_exp}")
