@@ -6,6 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="description" content="Башни Судьбы — текстовая RPG прямо в браузере. Python (PyScript + Pyodide), без сервера.">
   <title>Башни Судьбы — текстовая RPG в браузере</title>
+  <script src="./coi-serviceworker.min.js"></script>
   <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -32,7 +33,7 @@
     </div>
 
     <py-config src="./pyscript.json"></py-config>
-    <script type="py" src="./browser_main.py" terminal></script>
+    <script type="py" src="./browser_main.py" terminal worker></script>
   </main>
 
   <script src="main-page.js"></script>
