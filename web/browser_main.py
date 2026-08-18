@@ -4,7 +4,7 @@ import time
 
 sys.path.insert(0, "/")
 
-from js import localStorage
+from polyscript import xworker
 
 from game import Game
 from game.storage import SaveStorage
@@ -22,14 +22,14 @@ class BrowserSaveStorage(SaveStorage):
     def save(self, data):
         text = json.dumps(data, ensure_ascii=False)
         try:
-            localStorage.setItem(self.key, text)
+            xworker.sync.localStorage.setItem(self.key, text)
         except Exception:
             self.memory[self.key] = text
             print("! Сохранение временное: localStorage недоступен, прогресс может потеряться.")
 
     def load(self):
         try:
-            raw = localStorage.getItem(self.key)
+            raw = xworker.sync.localStorage.getItem(self.key)
         except Exception:
             raw = self.memory.get(self.key)
         if raw is None:
@@ -41,7 +41,7 @@ class BrowserSaveStorage(SaveStorage):
 
     def exists(self):
         try:
-            return localStorage.getItem(self.key) is not None
+            return xworker.sync.localStorage.getItem(self.key) is not None
         except Exception:
             return self.key in self.memory
 
