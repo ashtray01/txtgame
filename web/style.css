@@ -168,6 +168,54 @@ body {
 
 /* ---------- mobile ---------- */
 
+/* ---------- панель ввода ---------- */
+
+#input-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+#input-bar.hidden {
+  display: none;
+}
+
+#game-input {
+  flex: 1;
+  background: var(--term-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 14px;
+  outline: none;
+}
+
+#game-input:focus {
+  border-color: var(--accent);
+}
+
+#game-input-btn {
+  background: var(--accent);
+  color: #1a1600;
+  border: none;
+  border-radius: 6px;
+  padding: 0 20px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#game-input-btn:hover {
+  filter: brightness(1.1);
+}
+
 @media (max-width: 600px) {
   #app {
     padding: 4px 4px 16px;

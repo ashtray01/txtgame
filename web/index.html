@@ -32,7 +32,11 @@
     </div>
 
     <py-config src="./pyscript.json"></py-config>
-    <script type="py" src="./browser_main_v2.py" terminal></script>
+    <script type="py" src="./browser_main_v2.py" terminal async></script>
+    <div id="input-bar" class="hidden">
+      <input id="game-input" type="text" autocomplete="off" placeholder="Ввод…">
+      <button id="game-input-btn" type="button">OK</button>
+    </div>
   </main>
 
   <script src="main-page.js"></script>

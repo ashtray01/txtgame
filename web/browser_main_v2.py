@@ -1,10 +1,11 @@
+import asyncio
 import json
 import sys
 import time
 
 sys.path.insert(0, "/")
 
-from js import localStorage, prompt
+from js import document, localStorage
 
 from game import Game
 from game.storage import SaveStorage
@@ -54,15 +55,56 @@ def print_flush(*args, **kwargs):
     print(*args, **kwargs)
 
 
-def browser_input(prompt_text):
-    """Ввод в основном потоке: используем браузерный диалог prompt().
+async def browser_input(prompt_text):
+    """Асинхронный ввод через HTML-элемент <input> + кнопку.
 
     input() в PyScript работает только в worker-режиме (который требует
-    cross-origin isolation). В основном потоке подменяем его на prompt().
+    cross-origin isolation). В основном потоке используем HTML-ввод.
     """
-    value = prompt(prompt_text)
-    return "" if value is None else str(value)
+    print(str(prompt_text), end="", flush=True)
+    bar = document.getElementById("input-bar")
+    inp = document.getElementById("game-input")
+    btn = document.getElementById("game-input-btn")
+    bar.classList.remove("hidden")
+    inp.disabled = False
+    btn.disabled = False
+    inp.value = ""
+    inp.focus()
+
+    loop = asyncio.get_event_loop()
+    future = loop.create_future()
+
+    def submit(*_):
+        value = str(inp.value)
+        inp.disabled = True
+        btn.disabled = True
+        bar.classList.add("hidden")
+        if not future.done():
+            future.set_result(value)
+
+    btn.onclick = submit
+
+    def on_key(event):
+        if event.key == "Enter":
+            submit()
+
+    inp.onkeydown = on_key
+
+    value = await future
+    return value
 
 
-Game(out=print_flush, get_input=browser_input, clear_fn=browser_clear,
-     sleep=time.sleep, storage=BrowserSaveStorage()).start()
+async def main():
+    game = Game(
+        out=print_flush,
+        get_input=browser_input,
+        clear_fn=browser_clear,
+        sleep=time.sleep,
+        storage=BrowserSaveStorage(),
+    )
+    await game.start()
+
+
+# Планируем игру в существующем event loop PyScript (top-level await
+# несовместим с py_compile, а ensure_future работает в асинхронном контексте).
+_TASK = asyncio.ensure_future(main())

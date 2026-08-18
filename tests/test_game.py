@@ -1,3 +1,4 @@
+import asyncio
 import os
 import tempfile
 import unittest
@@ -6,6 +7,11 @@ from unittest import mock
 from game import Game, world
 from game.characters import Hero
 from game.storage import FileSaveStorage
+
+
+def run(coro):
+    """Запуск async-метода Game в тестах."""
+    return asyncio.run(coro)
 
 
 class FakeIO:
@@ -75,7 +81,7 @@ class TestBattle(unittest.TestCase):
         h = make_strong_hero(g)
         exp_before = h.exp
         gold_before = g.gold
-        result = g.battle(g.spawn_enemy(1))
+        result = run(g.battle(g.spawn_enemy(1)))
         self.assertTrue(result)
         self.assertGreater(g.gold, gold_before)
         self.assertGreaterEqual(h.exp, exp_before)
@@ -87,7 +93,7 @@ class TestBattle(unittest.TestCase):
         h.attack = (0, 0)
         h.luck = 0
         g.inv["Зелье ХП"] = 0
-        result = g.battle(g.spawn_enemy(5))
+        result = run(g.battle(g.spawn_enemy(5)))
         self.assertFalse(result)
         self.assertLess(h.hp, 1)
         self.assertGreaterEqual(g.hero.hp, 1)
@@ -98,7 +104,7 @@ class TestBattle(unittest.TestCase):
         h.hp = 1
         g.inv["Зелье ХП"] = 1
         with mock.patch.object(g, "drop_loot"):
-            g.battle(g.spawn_enemy(1))
+            run(g.battle(g.spawn_enemy(1)))
         self.assertEqual(g.inv["Зелье ХП"], 0)
         self.assertGreater(h.hp, 1)
 
@@ -109,7 +115,7 @@ class TestBattle(unittest.TestCase):
         enemy = g.spawn_enemy(1)
         enemy.max_hp = 99999
         enemy.hp = 99999
-        g.battle_item(enemy)
+        run(g.battle_item(enemy))
         self.assertEqual(h.atk_bonus, 4)
         self.assertEqual(g.inv["Заточка"], 0)
 
@@ -119,7 +125,7 @@ class TestBattle(unittest.TestCase):
         g.inv["Свиток силы"] = 1
         enemy = g.spawn_enemy(1)
         hp_before = enemy.hp
-        g.battle_item(enemy)
+        run(g.battle_item(enemy))
         self.assertEqual(enemy.hp, hp_before - 25)
 
     def test_block_reduces_enemy_damage(self):
@@ -131,7 +137,7 @@ class TestBattle(unittest.TestCase):
         enemy = g.spawn_enemy(5)
         enemy.luck = 0
         with mock.patch("game.game.random.randint", return_value=20):
-            result = g.battle(enemy)
+            result = run(g.battle(enemy))
         self.assertTrue(result)
         self.assertGreater(h.hp, 800)
 
@@ -140,7 +146,7 @@ class TestBattle(unittest.TestCase):
         h = make_strong_hero(g)
         h.ability_cd = 0
         enemy = g.spawn_enemy(1)
-        g.use_ability(enemy)
+        run(g.use_ability(enemy))
         self.assertEqual(h.ability_cd, 3)
 
     def test_ability_used_on_cooldown_does_nothing(self):
@@ -149,7 +155,7 @@ class TestBattle(unittest.TestCase):
         enemy = g.spawn_enemy(1)
         h.ability_cd = 2
         hp_before = enemy.hp
-        g.use_ability(enemy)
+        run(g.use_ability(enemy))
         self.assertEqual(enemy.hp, hp_before)
         self.assertEqual(h.ability_cd, 2)
 
@@ -158,7 +164,7 @@ class TestTower(unittest.TestCase):
     def test_enter_tower_clears_and_gives_relic(self):
         g, io = make_game("", "1", "1", "1", "1", "", "")
         make_strong_hero(g)
-        g.enter_tower(0)
+        run(g.enter_tower(0))
         self.assertIn(0, g.cleared)
         self.assertIn(world.TOWERS[0]["relic"], g.inv)
 
@@ -166,7 +172,7 @@ class TestTower(unittest.TestCase):
         g, io = make_game("")
         make_strong_hero(g)
         g.cleared = {0}
-        g.enter_tower(0)
+        run(g.enter_tower(0))
         self.assertEqual(g.cleared, {0})
 
 
@@ -177,14 +183,14 @@ class TestRest(unittest.TestCase):
         h.hp = 1
         g.inv["Припасы"] = 3
         with mock.patch("game.game.random.randint", return_value=50):
-            g.rest()
+            run(g.rest())
         self.assertEqual(g.inv["Припасы"], 2)
 
     def test_rest_no_supplies(self):
         g, io = make_game("")
         make_strong_hero(g)
         g.inv["Припасы"] = 0
-        g.rest()
+        run(g.rest())
         self.assertEqual(g.inv["Припасы"], 0)
 
 
@@ -194,7 +200,7 @@ class TestShop(unittest.TestCase):
         make_strong_hero(g)
         g.gold = 100
         g.inv["Зелье ХП"] = 2
-        g.shop()
+        run(g.shop())
         self.assertEqual(g.gold, 85)
         self.assertEqual(g.inv["Зелье ХП"], 3)
 
@@ -203,7 +209,7 @@ class TestShop(unittest.TestCase):
         h = make_strong_hero(g)
         h.attack = (5, 10)
         g.gold = 200
-        g.shop()
+        run(g.shop())
         self.assertEqual(g.gold, 150)
         self.assertEqual(h.attack, (7, 12))
         self.assertEqual(g.upgrades["Клинок"], 1)
@@ -212,7 +218,7 @@ class TestShop(unittest.TestCase):
         g, io = make_game("1", "", "0")
         make_strong_hero(g)
         g.gold = 0
-        g.shop()
+        run(g.shop())
         self.assertEqual(g.gold, 0)
 
 
@@ -304,7 +310,7 @@ class TestVictory(unittest.TestCase):
         make_strong_hero(g)
         g.cleared = set(range(len(world.TOWERS)))
         with self.assertRaises(SystemExit):
-            g.victory()
+            run(g.victory())
 
 
 class TestElixir(unittest.TestCase):
@@ -312,7 +318,7 @@ class TestElixir(unittest.TestCase):
         g, io = make_game("1", "")
         h = make_strong_hero(g, hp=100)
         g.inv["Эликсир жизни"] = 1
-        g.show_character()
+        run(g.show_character())
         self.assertEqual(h.max_hp, 120)
         self.assertEqual(g.inv["Эликсир жизни"], 0)
 
