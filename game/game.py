@@ -191,7 +191,7 @@ class Game:
         item = random.choice(LOOT)
         self.inv[item] = self.inv.get(item, 0) + 1
         self.say(f"Найдено: {item}")
-        self.wait()
+        self.wait(1.0)
 
     # ---------- поражение ----------
 
