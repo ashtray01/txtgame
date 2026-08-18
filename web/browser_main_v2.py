@@ -4,7 +4,7 @@ import time
 
 sys.path.insert(0, "/")
 
-from polyscript import xworker
+from js import localStorage, prompt
 
 from game import Game
 from game.storage import SaveStorage
@@ -20,14 +20,14 @@ class BrowserSaveStorage(SaveStorage):
     def save(self, data):
         text = json.dumps(data, ensure_ascii=False)
         try:
-            xworker.sync.localStorage.setItem(self.key, text)
+            localStorage.setItem(self.key, text)
         except Exception:
             self.memory[self.key] = text
             print("! Сохранение временное: localStorage недоступен, прогресс может потеряться.")
 
     def load(self):
         try:
-            raw = xworker.sync.localStorage.getItem(self.key)
+            raw = localStorage.getItem(self.key)
         except Exception:
             raw = self.memory.get(self.key)
         if raw is None:
@@ -39,7 +39,7 @@ class BrowserSaveStorage(SaveStorage):
 
     def exists(self):
         try:
-            return xworker.sync.localStorage.getItem(self.key) is not None
+            return localStorage.getItem(self.key) is not None
         except Exception:
             return self.key in self.memory
 
@@ -54,5 +54,15 @@ def print_flush(*args, **kwargs):
     print(*args, **kwargs)
 
 
-Game(out=print_flush, get_input=input, clear_fn=browser_clear,
+def browser_input(prompt_text):
+    """Ввод в основном потоке: используем браузерный диалог prompt().
+
+    input() в PyScript работает только в worker-режиме (который требует
+    cross-origin isolation). В основном потоке подменяем его на prompt().
+    """
+    value = prompt(prompt_text)
+    return "" if value is None else str(value)
+
+
+Game(out=print_flush, get_input=browser_input, clear_fn=browser_clear,
      sleep=time.sleep, storage=BrowserSaveStorage()).start()

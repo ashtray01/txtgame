@@ -6,7 +6,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="description" content="Башни Судьбы — текстовая RPG прямо в браузере. Python (PyScript + Pyodide), без сервера.">
   <title>Башни Судьбы — текстовая RPG в браузере</title>
-  <script src="./coi-serviceworker.min.js"></script>
   <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -33,28 +32,11 @@
     </div>
 
     <py-config src="./pyscript.json"></py-config>
-    <script type="py" src="./browser_main_v2.py" terminal worker></script>
+    <script type="py" src="./browser_main_v2.py" terminal></script>
   </main>
 
   <script src="main-page.js"></script>
-  <script type="module">
-    const loadPyScript = () => {
-      if (!window.crossOriginIsolated) return;
-      const script = document.createElement('script');
-      script.type = 'module';
-      script.src = 'https://pyscript.net/releases/2024.1.1/core.js';
-      script.onerror = () => window.onCoreLoadError && window.onCoreLoadError();
-      document.head.appendChild(script);
-    };
-
-    if (window.crossOriginIsolated) {
-      loadPyScript();
-    } else if (navigator.serviceWorker) {
-      navigator.serviceWorker.ready.then(() => {
-        if (window.crossOriginIsolated) loadPyScript();
-        else location.reload();
-      });
-    }
-  </script>
+  <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"
+    onerror="window.onCoreLoadError && window.onCoreLoadError()"></script>
 </body>
 </html>
