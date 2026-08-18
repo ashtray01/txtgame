@@ -37,6 +37,24 @@
   </main>
 
   <script src="main-page.js"></script>
-  <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" onerror="window.onCoreLoadError && window.onCoreLoadError()"></script>
+  <script type="module">
+    const loadPyScript = () => {
+      if (!window.crossOriginIsolated) return;
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://pyscript.net/releases/2024.1.1/core.js';
+      script.onerror = () => window.onCoreLoadError && window.onCoreLoadError();
+      document.head.appendChild(script);
+    };
+
+    if (window.crossOriginIsolated) {
+      loadPyScript();
+    } else if (navigator.serviceWorker) {
+      navigator.serviceWorker.ready.then(() => {
+        if (window.crossOriginIsolated) loadPyScript();
+        else location.reload();
+      });
+    }
+  </script>
 </body>
 </html>
