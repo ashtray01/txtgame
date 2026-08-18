@@ -5,6 +5,7 @@ from unittest import mock
 
 from game import Game, world
 from game.characters import Hero
+from game.storage import FileSaveStorage
 
 
 class FakeIO:
@@ -248,6 +249,53 @@ class TestSaveLoad(unittest.TestCase):
         self.g = g
         g.save_path = os.path.join(tempfile.gettempdir(), "nonexistent_xyz.json")
         self.assertFalse(g.load())
+
+    def test_default_storage_is_file_storage(self):
+        g, io = make_game()
+        self.g = g
+        self.assertIsInstance(g.storage, FileSaveStorage)
+        self.assertEqual(g.storage.path, g.save_path)
+
+    def test_custom_storage_injected(self):
+        class FakeStorage(FileSaveStorage):
+            def __init__(self):
+                self.data = None
+                self.saved = 0
+                self.loaded = 0
+
+            def save(self, data):
+                self.data = data
+                self.saved += 1
+
+            def load(self):
+                self.loaded += 1
+                return self.data
+
+            def exists(self):
+                return self.data is not None
+
+        g, io = make_game()
+        self.g = g
+        g.storage = FakeStorage()
+        make_strong_hero(g)
+        g.gold = 42
+        g.save()
+        self.assertEqual(g.storage.saved, 1)
+        self.assertEqual(g.storage.data["gold"], 42)
+
+        g2, io2 = make_game()
+        self.g = g2
+        g2.storage = g.storage
+        self.assertTrue(g2.load())
+        self.assertEqual(g2.gold, 42)
+        self.assertEqual(g2.storage.loaded, 1)
+
+    def test_save_without_hero_does_nothing(self):
+        g, io = make_game()
+        self.g = g
+        g.save()
+        with open(g.save_path, encoding="utf-8") as f:
+            self.assertEqual(f.read(), "")
 
 
 class TestVictory(unittest.TestCase):

@@ -5,6 +5,7 @@ import time
 
 from . import art
 from .characters import Character, Hero
+from .storage import FileSaveStorage
 from .world import (
     CLASSES,
     ELIXIR_HP,
@@ -28,7 +29,9 @@ def health_bar(current, max_hp, length=20):
 
 
 class Game:
-    def __init__(self, out=print, get_input=input, clear_fn=clear, sleep=time.sleep):
+    def __init__(self, out=print, get_input=input, clear_fn=clear, sleep=time.sleep,
+                 storage=None):
+        """storage: объект с методами save/load/exists (см. game.storage)."""
         self.out = out
         self.get_input = get_input
         self.clear_fn = clear_fn
@@ -40,6 +43,17 @@ class Game:
         self.upgrades = {"Клинок": 0, "Доспех": 0, "Талисман": 0}
         self.log = []
         self.save_path = "savegame.json"
+        self._storage = storage
+
+    @property
+    def storage(self):
+        if self._storage is None:
+            self._storage = FileSaveStorage(self.save_path)
+        return self._storage
+
+    @storage.setter
+    def storage(self, value):
+        self._storage = value
 
     # ---------- вывод ----------
 
@@ -203,7 +217,7 @@ class Game:
 
     def defeat(self):
         self.scene_art(art.get_extra("DEATH"), "💀 Вы погибли...")
-        if os.path.exists(self.save_path):
+        if self.storage.exists():
             ans = self.ask("Восстановиться из последнего сохранения? (1 да / 0 выйти) ")
             if ans == "1" and self.load():
                 self.say("Сохранение загружено, путь продолжается.")
@@ -427,15 +441,13 @@ class Game:
             "cleared": sorted(self.cleared),
             "upgrades": self.upgrades,
         }
-        with open(self.save_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        self.storage.save(data)
 
     def load(self):
-        if not os.path.exists(self.save_path):
+        if not self.storage.exists():
             return False
         try:
-            with open(self.save_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            data = self.storage.load()
             self.hero = Hero(data["name"], data["class_name"])
             self.hero.level = data["level"]
             self.hero.exp = data["exp"]
@@ -453,7 +465,7 @@ class Game:
             return False
 
     def start(self):
-        if os.path.exists(self.save_path):
+        if self.storage.exists():
             self.scene("TITLE", "🏰 БАШНИ СУДЬБЫ")
             self.say("Найдено сохранение.")
             ans = self.ask("1. Продолжить  2. Новая игра  0. Выход: ")

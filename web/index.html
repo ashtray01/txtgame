@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Башни Судьбы — текстовая RPG прямо в браузере. Python (PyScript + Pyodide), без сервера.">
+  <title>Башни Судьбы — текстовая RPG в браузере</title>
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <div id="loading">
+      <div class="loading-box">
+        <pre class="logo"><span class="dim">   _____  __   __   _____    _____    _____    _____   _____
+  |_   _| \ \ / /  / ____|  / ____|  |  __ \  / ____| / ____|
+    | |    \ V /  | |  __  | |  __  | |__) | | (___  | (___
+    | |     > <   | | |_ | | | |_ | |  _  /   \___ \  \___ \
+   _| |_   / . \  | |__| | | |__| | | | \ \  ____) | ____) |
+  |_____| /_/ \_\  \_____|  \_____| |_|  \_\|_____/ |_____/</span></pre>
+        <p class="subtitle">Пять башен. Пять реликвий. Одна судьба.</p>
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="loading-text" class="status">Загружаю PyScript runtime…</p>
+      </div>
+    </div>
+
+    <div id="runtime-error" class="overlay hidden" role="alert">
+      <pre id="error-box" class="error-box"></pre>
+      <p class="hint">Проверьте подключение к интернету (runtime грузится с CDN).<br>Сохранения хранятся в localStorage браузера.</p>
+      <button id="reload-btn" type="button">Перезагрузить</button>
+    </div>
+
+    <py-config src="./pyscript.json"></py-config>
+    <script type="py" src="./browser_main.py" terminal worker></script>
+  </main>
+
+  <script src="main-page.js"></script>
+  <script src="https://pyscript.net/releases/2024.1.1/core.js" onerror="window.onCoreLoadError && window.onCoreLoadError()"></script>
+</body>
+</html>
