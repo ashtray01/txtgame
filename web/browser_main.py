@@ -4,7 +4,7 @@ import time
 
 sys.path.insert(0, "/")
 
-from polyscript import xworker
+from js import localStorage
 
 from game import Game
 from game.storage import SaveStorage
@@ -13,12 +13,7 @@ SAVE_KEY = "txtgame_save_v1"
 
 
 class BrowserSaveStorage(SaveStorage):
-    """Сохранение в localStorage главного потока через синхронный мост xworker.sync.
-
-    Тот же механизм, что использует терминал для input(), поэтому работает
-    без дополнительных зависимостей. Если мост недоступен — временный
-    фоллбэк в памяти с предупреждением (прогресс не сохранится).
-    """
+    """Сохранение игры в localStorage браузера."""
 
     def __init__(self, key=SAVE_KEY):
         self.key = key
@@ -27,14 +22,14 @@ class BrowserSaveStorage(SaveStorage):
     def save(self, data):
         text = json.dumps(data, ensure_ascii=False)
         try:
-            xworker.sync.localStorage.setItem(self.key, text)
+            localStorage.setItem(self.key, text)
         except Exception:
             self.memory[self.key] = text
             print("! Сохранение временное: localStorage недоступен, прогресс может потеряться.")
 
     def load(self):
         try:
-            raw = xworker.sync.localStorage.getItem(self.key)
+            raw = localStorage.getItem(self.key)
         except Exception:
             raw = self.memory.get(self.key)
         if raw is None:
@@ -46,7 +41,7 @@ class BrowserSaveStorage(SaveStorage):
 
     def exists(self):
         try:
-            return xworker.sync.localStorage.getItem(self.key) is not None
+            return localStorage.getItem(self.key) is not None
         except Exception:
             return self.key in self.memory
 
