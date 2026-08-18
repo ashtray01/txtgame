@@ -5,6 +5,7 @@
     "../game/art.py": "./game/art.py",
     "../game/characters.py": "./game/characters.py",
     "../game/game.py": "./game/game.py",
+    "../game/storage.py": "./game/storage.py",
     "../game/world.py": "./game/world.py"
   }
 }
