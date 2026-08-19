@@ -30,11 +30,12 @@ body {
 #app {
   max-width: 880px;
   margin: 0 auto;
-  padding: 12px 10px 32px;
+  padding: 8px 10px 8px;
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
 }
 
 /* ---------- экран загрузки ---------- */
@@ -179,12 +180,13 @@ py-terminal .xterm {
 
 #input-bar {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 8px;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 5px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
+  flex: 0 0 auto;
 }
 
 #input-bar.hidden {
@@ -197,7 +199,7 @@ py-terminal .xterm {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 7px 10px;
   font-family: var(--mono);
   font-size: 14px;
   outline: none;
@@ -212,7 +214,7 @@ py-terminal .xterm {
   color: #1a1600;
   border: none;
   border-radius: 6px;
-  padding: 0 20px;
+  padding: 0 16px;
   font-family: var(--mono);
   font-size: 14px;
   font-weight: bold;

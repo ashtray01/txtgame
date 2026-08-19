@@ -81,6 +81,21 @@
   let termViewport = null;
   let termAtBottom = true;
 
+  function scrollTerminalToBottom() {
+    const vp = termViewport;
+    if (!vp) return;
+    const doScroll = () => {
+      if (!vp) return;
+      // когда игра показывает поле ввода, всегда показываем последнюю строку
+      const inputBar = document.getElementById('input-bar');
+      const inputVisible = inputBar && !inputBar.classList.contains('hidden');
+      if (!inputVisible && !termAtBottom) return;
+      vp.scrollTop = vp.scrollHeight;
+    };
+    // откладываем до следующего кадра + задержку, чтобы xterm успел дорисовать
+    requestAnimationFrame(() => setTimeout(doScroll, 80));
+  }
+
   function bindTerminalScroll() {
     const vp = document.querySelector('.xterm-viewport');
     if (!vp || vp === termViewport) return;
@@ -91,18 +106,27 @@
     });
     const rows = document.querySelector('.xterm-rows');
     if (rows) {
-      const onRowsChange = () => {
-        if (termAtBottom && termViewport) {
-          termViewport.scrollTop = termViewport.scrollHeight;
-        }
-      };
-      const rowsObserver = new MutationObserver(onRowsChange);
+      const rowsObserver = new MutationObserver(scrollTerminalToBottom);
       rowsObserver.observe(rows, { childList: true, subtree: true, characterData: true });
     }
+    scrollTerminalToBottom();
   }
 
   // терминал может появиться позже — наблюдаем за появлением viewport
   const termObserver = new MutationObserver(bindTerminalScroll);
   termObserver.observe(document.body, { childList: true, subtree: true });
   bindTerminalScroll();
+
+  // когда игра показывает поле ввода, гарантированно прокручиваем к последней строке
+  const inputBar = document.getElementById('input-bar');
+  if (inputBar) {
+    const inputObserver = new MutationObserver(() => {
+      if (!inputBar.classList.contains('hidden')) {
+        termAtBottom = true;
+        // задержка больше, чтобы весь вывод (например, карта мира) успел отрисоваться
+        setTimeout(scrollTerminalToBottom, 150);
+      }
+    });
+    inputObserver.observe(inputBar, { attributes: true, attributeFilter: ['class'] });
+  }
 })();
