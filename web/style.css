@@ -33,7 +33,8 @@ body {
   padding: 12px 10px 32px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
 }
 
 /* ---------- экран загрузки ---------- */
@@ -98,11 +99,12 @@ body {
 }
 
 /* ---------- терминал ---------- */
+/* Элемент рендерится PyScript как тег <py-terminal> (у него нет класса),
+   поэтому стилизуем именно по тегу, а не по классу .py-terminal. */
 
-.py-terminal {
-  flex: 0 0 105vh;
-  height: 105vh !important;
-  min-height: 105vh !important;
+py-terminal {
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -111,8 +113,10 @@ body {
   font-size: 15px;
 }
 
-.py-terminal .xterm {
+py-terminal .xterm {
   padding: 8px;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* ---------- ошибка runtime ---------- */
@@ -224,10 +228,9 @@ body {
     padding: 4px 4px 16px;
   }
 
-  .py-terminal {
-    flex-basis: 132vh;
-    height: 132vh !important;
-    min-height: 132vh !important;
+  py-terminal {
+    flex: 1 1 auto;
+    min-height: 0;
     font-size: 12px;
     border-radius: 6px;
   }

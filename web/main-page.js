@@ -72,4 +72,37 @@
   }, RUNTIME_TIMEOUT);
 
   reloadBtn.addEventListener('click', () => location.reload());
+
+  // ---------- автопрокрутка терминала к последней строке ----------
+  // В PyScript (main thread) xterm не всегда сам прокручивает viewport вниз
+  // при программном выводе, поэтому последние строки (например "0. Выход")
+  // остаются скрытыми. Компенсируем это: следим за изменением содержимого
+  // терминала и прокручиваем его вниз, если пользователь не отмотал вверх.
+  let termViewport = null;
+  let termAtBottom = true;
+
+  function bindTerminalScroll() {
+    const vp = document.querySelector('.xterm-viewport');
+    if (!vp || vp === termViewport) return;
+    termViewport = vp;
+    termAtBottom = true;
+    vp.addEventListener('scroll', () => {
+      termAtBottom = vp.scrollTop + vp.clientHeight >= vp.scrollHeight - 2;
+    });
+    const rows = document.querySelector('.xterm-rows');
+    if (rows) {
+      const onRowsChange = () => {
+        if (termAtBottom && termViewport) {
+          termViewport.scrollTop = termViewport.scrollHeight;
+        }
+      };
+      const rowsObserver = new MutationObserver(onRowsChange);
+      rowsObserver.observe(rows, { childList: true, subtree: true, characterData: true });
+    }
+  }
+
+  // терминал может появиться позже — наблюдаем за появлением viewport
+  const termObserver = new MutationObserver(bindTerminalScroll);
+  termObserver.observe(document.body, { childList: true, subtree: true });
+  bindTerminalScroll();
 })();
