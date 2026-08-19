@@ -101,7 +101,8 @@ body {
 
 .py-terminal {
   flex: 1;
-  min-height: 70vh;
+  height: 105vh;
+  min-height: 105vh;
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -224,7 +225,8 @@ body {
   }
 
   .py-terminal {
-    min-height: 88vh;
+    height: 132vh;
+    min-height: 132vh;
     font-size: 12px;
     border-radius: 6px;
   }
