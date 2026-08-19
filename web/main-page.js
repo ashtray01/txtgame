@@ -7,7 +7,7 @@
   const errorBox = document.getElementById('error-box');
   const reloadBtn = document.getElementById('reload-btn');
 
-  const RUNTIME_TIMEOUT = 90000;
+  const RUNTIME_TIMEOUT = 180000;
 
   function showError(title, detail) {
     if (!errorOverlay.classList.contains('hidden')) return;
@@ -27,7 +27,7 @@
   window.onCoreLoadError = function () {
     showError(
       'RUNTIME ERROR',
-      'Не удалось загрузить PyScript runtime с CDN (pyscript.net).\n' +
+      'Не удалось загрузить PyScript runtime (cdn.jsdelivr.net).\n' +
       'Проверьте подключение к интернету и перезагрузите страницу.'
     );
   };
@@ -37,7 +37,7 @@
     showLoading('Запускаю игру…');
     // страховка: если терминал уже появился, прячем загрузку
     setTimeout(() => {
-      if (document.querySelector('.py-terminal')) hideLoading();
+      if (document.querySelector('py-terminal, .terminal')) hideLoading();
     }, 800);
   }, true);
 
@@ -49,7 +49,7 @@
 
   // скрываем загрузку, когда терминал появился в DOM
   const observer = new MutationObserver(() => {
-    if (document.querySelector('.py-terminal')) hideLoading();
+    if (document.querySelector('py-terminal, .terminal')) hideLoading();
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
@@ -62,7 +62,7 @@
 
   // watchdog: терминал не появился за время — показываем ошибку соединения
   setTimeout(() => {
-    if (!document.querySelector('.py-terminal')) {
+    if (!document.querySelector('py-terminal, .terminal')) {
       showError(
         'RUNTIME ERROR',
         'PyScript runtime не загрузился за отведённое время.\n' +

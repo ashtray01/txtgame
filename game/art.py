@@ -1,7 +1,7 @@
 from .ascii_art_pack import ENEMIES, HEROES, RELICS, SCENES_EXTRA
 
 SCENES = {
-    "TITLE": """
+    "TITLE": r"""
    _____  __   __   _____    _____    _____    _____   _____
   |_   _| \\ \\ / /  / ____|  / ____|  |  __ \\  / ____| / ____|
     | |    \\ V /  | |  __  | |  __  | |__) | | (___  | (___

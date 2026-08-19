@@ -6,8 +6,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="description" content="Башни Судьбы — текстовая RPG прямо в браузере. Python (PyScript + Pyodide), без сервера.">
   <title>Башни Судьбы — текстовая RPG в браузере</title>
-  <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@pyscript/core@0.3.14/dist/core.css">
+  <link rel="stylesheet" href="./style.css">
+  <style>#loading{pointer-events:none}</style>
 </head>
 <body>
   <main id="app">
@@ -18,8 +19,7 @@
     | |    \ V /  | |  __  | |  __  | |__) | | (___  | (___
     | |     > <   | | |_ | | | |_ | |  _  /   \___ \  \___ \
    _| |_   / . \  | |__| | | |__| | | | \ \  ____) | ____) |
-  |_____| /_/ \_\  \_____|  \_____| |_|  \_\|_____/ |_____/
-</span></pre>
+  |_____| /_/ \_\  \_____|  \_____| |_|  \_\|_____/ |_____/</span></pre>
         <p class="subtitle">Пять башен. Пять реликвий. Одна судьба.</p>
         <div class="spinner" aria-hidden="true"></div>
         <p id="loading-text" class="status">Загружаю PyScript runtime…</p>
@@ -40,8 +40,8 @@
     </div>
   </main>
 
-  <script src="main-page.js"></script>
-  <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"
+  <script src="./main-page.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@pyscript/core@0.3.14/dist/core.js"
     onerror="window.onCoreLoadError && window.onCoreLoadError()"></script>
 </body>
 </html>
