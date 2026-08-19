@@ -70,6 +70,15 @@ body {
   max-width: 100%;
 }
 
+/* стартовый логотип: широкий для десктопа, узкий для мобильных */
+.logo-desktop {
+  display: block;
+}
+
+.logo-mobile {
+  display: none;
+}
+
 .subtitle {
   color: var(--dim);
   font-style: italic;
@@ -239,5 +248,15 @@ py-terminal .xterm {
 
   .logo {
     font-size: 8px;
+  }
+
+  /* на мобильных показываем компактный логотип */
+  .logo-desktop {
+    display: none;
+  }
+
+  .logo-mobile {
+    display: block;
+    font-size: 10px;
   }
 }

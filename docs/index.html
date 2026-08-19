@@ -7,19 +7,34 @@
   <meta name="description" content="Башни Судьбы — текстовая RPG прямо в браузере. Python (PyScript + Pyodide), без сервера.">
   <title>Башни Судьбы — текстовая RPG в браузере</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@pyscript/core@0.3.14/dist/core.css">
-  <link rel="stylesheet" href="./style.css?v=fix-terminal-final3">
+  <link rel="stylesheet" href="./style.css?v=fix-logo">
   <style>#loading{pointer-events:none}</style>
 </head>
 <body>
   <main id="app">
     <div id="loading">
       <div class="loading-box">
-        <pre class="logo"><span class="dim">   _____  __   __   _____    _____    _____    _____   _____
-  |_   _| \ \ / /  / ____|  / ____|  |  __ \  / ____| / ____|
-    | |    \ V /  | |  __  | |  __  | |__) | | (___  | (___
-    | |     > <   | | |_ | | | |_ | |  _  /   \___ \  \___ \
-   _| |_   / . \  | |__| | | |__| | | | \ \  ____) | ____) |
-  |_____| /_/ \_\  \_____|  \_____| |_|  \_\|_____/ |_____/</span></pre>
+        <pre class="logo logo-desktop"><span class="dim">==============================================================
+████████╗██╗  ██╗████████╗ ██████╗  █████╗ ███╗   ███╗███████╗
+╚══██╔══╝╚██╗██╔╝╚══██╔══╝██╔════╝ ██╔══██╗████╗ ████║██╔════╝
+   ██║    ╚███╔╝    ██║   ██║  ███╗███████║██╔████╔██║█████╗
+   ██║    ██╔██╗    ██║   ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝
+   ██║   ██╔╝ ██╗   ██║   ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
+   ╚═╝   ╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
+--------------------------------------------------------------
+                  terminal roguelike adventure
+==============================================================</span></pre>
+        <pre class="logo logo-mobile"><span class="dim">╔══════════════════════╗
+║  ████████╗██╗  ██╗  ║
+║  ╚══██╔══╝╚██╗██╔╝  ║
+║     ██║    ╚███╔╝   ║
+║     ██║    ██╔██╗   ║
+║     ██║   ██╔╝ ██╗  ║
+║     ╚═╝   ╚═╝  ╚═╝  ║
+║                      ║
+║      T X T G A M E   ║
+║  terminal roguelike  ║
+╚══════════════════════╝</span></pre>
         <p class="subtitle">Пять башен. Пять реликвий. Одна судьба.</p>
         <div class="spinner" aria-hidden="true"></div>
         <p id="loading-text" class="status">Загружаю PyScript runtime…</p>

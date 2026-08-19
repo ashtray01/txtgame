@@ -5,9 +5,10 @@ import time
 
 sys.path.insert(0, "/")
 
-from js import document, localStorage
+from js import document, localStorage, window
 
 from game import Game
+from game import art
 from game.storage import SaveStorage
 
 SAVE_KEY = "txtgame_save_v1"
@@ -97,6 +98,14 @@ async def browser_input(prompt_text):
 
 
 async def main():
+    # на узких экранах (мобильные) показываем компактный логотип
+    try:
+        width = int(window.innerWidth)
+        if width and width < 520:
+            art.SCENES["TITLE"] = art.SCENES["TITLE_MOBILE"]
+    except Exception:
+        pass
+
     game = Game(
         out=print_flush,
         get_input=browser_input,
