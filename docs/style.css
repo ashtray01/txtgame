@@ -1,0 +1,233 @@
+:root {
+  --bg: #0b0b0f;
+  --panel: #12121a;
+  --border: #2a2a3a;
+  --text: #cfd2dc;
+  --dim: #6b7185;
+  --accent: #ffd23f;
+  --error: #ff5c5c;
+  --term-bg: #0d0d13;
+  --mono: "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 12px 10px 32px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---------- экран загрузки ---------- */
+
+#loading {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+#loading.hidden {
+  display: none;
+}
+
+.loading-box {
+  text-align: center;
+  padding: 20px;
+}
+
+.logo {
+  color: var(--accent);
+  font-size: 13px;
+  line-height: 1.15;
+  margin: 0 auto;
+  overflow: auto;
+  max-width: 100%;
+}
+
+.subtitle {
+  color: var(--dim);
+  font-style: italic;
+  margin: 14px 0 18px;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  margin: 0 auto 14px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status {
+  color: var(--dim);
+  font-size: 13px;
+  min-height: 1.2em;
+  word-break: break-word;
+}
+
+/* ---------- терминал ---------- */
+
+.py-terminal {
+  flex: 1;
+  min-height: 70vh;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--term-bg);
+  overflow: hidden;
+  font-size: 15px;
+}
+
+.py-terminal .xterm {
+  padding: 8px;
+}
+
+/* ---------- ошибка runtime ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.error-box {
+  color: var(--error);
+  background: var(--panel);
+  border: 1px solid var(--error);
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 640px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  text-align: left;
+}
+
+.hint {
+  color: var(--dim);
+  font-size: 13px;
+  margin: 16px 0;
+}
+
+#reload-btn {
+  background: var(--accent);
+  color: #1a1600;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#reload-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* ---------- mobile ---------- */
+
+/* ---------- панель ввода ---------- */
+
+#input-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+#input-bar.hidden {
+  display: none;
+}
+
+#game-input {
+  flex: 1;
+  background: var(--term-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 14px;
+  outline: none;
+}
+
+#game-input:focus {
+  border-color: var(--accent);
+}
+
+#game-input-btn {
+  background: var(--accent);
+  color: #1a1600;
+  border: none;
+  border-radius: 6px;
+  padding: 0 20px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#game-input-btn:hover {
+  filter: brightness(1.1);
+}
+
+@media (max-width: 600px) {
+  #app {
+    padding: 4px 4px 16px;
+  }
+
+  .py-terminal {
+    min-height: 88vh;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .logo {
+    font-size: 8px;
+  }
+}
