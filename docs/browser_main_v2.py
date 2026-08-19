@@ -61,7 +61,9 @@ async def browser_input(prompt_text):
     input() в PyScript работает только в worker-режиме (который требует
     cross-origin isolation). В основном потоке используем HTML-ввод.
     """
-    print(str(prompt_text), end="", flush=True)
+    # PyScript reliably forwards complete lines; a prompt without a newline
+    # can remain buffered and leave only an empty cursor line visible.
+    print(str(prompt_text), flush=True)
     bar = document.getElementById("input-bar")
     inp = document.getElementById("game-input")
     btn = document.getElementById("game-input-btn")
