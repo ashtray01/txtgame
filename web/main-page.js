@@ -129,4 +129,37 @@
     });
     inputObserver.observe(inputBar, { attributes: true, attributeFilter: ['class'] });
   }
+
+  // ---------- фикс дублирования ввода ----------
+  // PyScript-терминал (xterm) перехватывает нажатия клавиш и эхо-печатает их,
+  // даже когда видно наше HTML-поле ввода. Из-за этого "9" превращается в
+  // "9999999999...". Пока видно #input-bar — отключаем клавиатуру терминала,
+  // чтобы он не дублировал символы; когда поле скрыто — включаем обратно.
+  function setTerminalInputEnabled(enabled) {
+    const ta = document.querySelector('textarea.xterm-helper-textarea');
+    if (!ta) return;
+    ta.disabled = !enabled;
+    ta.readOnly = !enabled;
+    if (enabled) {
+      // возвращаем фокус терминалу, чтобы он снова ловил ввод
+      try { ta.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    } else {
+      // убираем фокус с терминала, чтобы он не печатал в консоль
+      try { ta.blur(); } catch (e) { /* ignore */ }
+    }
+  }
+
+  const inputBarEl = document.getElementById('input-bar');
+  if (inputBarEl) {
+    const inputObserver2 = new MutationObserver(() => {
+      const visible = !inputBarEl.classList.contains('hidden');
+      setTerminalInputEnabled(!visible);
+    });
+    inputObserver2.observe(inputBarEl, { attributes: true, attributeFilter: ['class'] });
+    // терминал может появиться позже — применяем состояние к новому textarea
+    const lateObserver = new MutationObserver(() => {
+      setTerminalInputEnabled(inputBarEl.classList.contains('hidden'));
+    });
+    lateObserver.observe(document.body, { childList: true, subtree: true });
+  }
 })();

@@ -83,17 +83,24 @@ class Game:
 
     # ---------- враги ----------
 
-    def spawn_enemy(self, diff, is_boss=False, boss_name=None):
+    def spawn_enemy(self, diff, is_boss=False, boss_name=None, floor=1, avoid=None):
+        """Создаёт врага. diff — сложность башни, floor — этаж (влияет на силу)."""
         level = self.hero.level if self.hero else 1
+        floor_bonus = max(0, floor - 1)
         if is_boss:
             name = boss_name or "Владыка"
-            hp = 30 + diff * 12 + level * 4
-            atk = (diff * 3 + level // 2, diff * 4 + level // 2)
+            hp = 30 + diff * 12 + level * 4 + floor_bonus * 6
+            atk = (diff * 3 + level // 2 + floor_bonus,
+                   diff * 4 + level // 2 + floor_bonus)
             luck = 5 + diff * 2
         else:
-            name = random.choice(MOBS[diff])
-            hp = 15 + diff * 8 + level * 3
-            atk = (diff * 2 + level // 2, diff * 3 + level // 2)
+            pool = list(MOBS[diff])
+            if avoid and avoid in pool and len(pool) > 1:
+                pool.remove(avoid)
+            name = random.choice(pool)
+            hp = 15 + diff * 8 + level * 3 + floor_bonus * 4
+            atk = (diff * 2 + level // 2 + floor_bonus,
+                   diff * 3 + level // 2 + floor_bonus)
             luck = 3 + diff * 2
         return Character(name, hp, atk, luck, level=diff)
 
@@ -119,6 +126,7 @@ class Game:
             self.say("")
             self.say(f"1. Атака  2. Блок  3. Зелье ({potions})")
             self.say(f"4. {ab['ability']} ({ab_status})  5. Предмет (Зат {sharp}/Свит {scroll})")
+            self.say("0. Помощь (что это всё значит)")
 
             cmd = await self.ask(">>> ")
             self.hero.block = False
@@ -139,6 +147,9 @@ class Game:
                 await self.use_ability(enemy)
             elif cmd == "5":
                 await self.battle_item(enemy)
+            elif cmd == "0":
+                await self.battle_help()
+                acted = False
             else:
                 acted = False
                 self.log.append("Вы замешкались...")
@@ -216,6 +227,25 @@ class Game:
         self.say(f"Найдено: {item}")
         self.wait(1.0)
 
+    async def battle_help(self):
+        ab = CLASSES[self.hero.class_name]
+        self.scene("BATTLE")
+        self.say("— ПОМОЩЬ ПО БОЮ —")
+        self.say("")
+        self.say("1. Атака — обычный удар, может быть критическим (шанс = удача).")
+        self.say("2. Блок — до следующего хода получаете -70% урона.")
+        self.say("   Полезно, когда враг сильнее или надо переждать кулдаун.")
+        self.say("3. Зелье — мгновенно лечит 30 HP (тратит запас).")
+        self.say(f"4. {ab['ability']} — {ab['ability_desc']}. Кулдаун 3 хода.")
+        self.say("5. Предмет — боевые расходники:")
+        self.say("   • Заточка: +4 к атаке до конца боя.")
+        self.say("   • Свиток силы: 25 урона врагу, не зависит от атаки.")
+        self.say("")
+        self.say("Крит бьёт x2. Если удача долго молчит — крит гарантирован.")
+        self.say("Способность перезаряжается в начале каждого боя.")
+        await self.ask("Назад (Enter)")
+        self.log.append("Вы вернулись в бой.")
+
     # ---------- поражение ----------
 
     async def defeat(self):
@@ -242,16 +272,18 @@ class Game:
         floors = tower["diff"] + 2
         self.say(f"Этажей: {floors}. Впереди чудовища и босс — {tower['boss']}.")
         await self.ask("Войти? (Enter)")
+        prev_enemy = None
         for f in range(1, floors + 1):
             self.scene("TOWER_INNER")
             self.say(f"Этаж {f}/{floors}")
             is_boss = f == floors
             if is_boss:
-                enemy = self.spawn_enemy(tower["diff"], is_boss=True, boss_name=tower["boss"])
+                enemy = self.spawn_enemy(tower["diff"], is_boss=True, boss_name=tower["boss"], floor=f)
             else:
-                enemy = self.spawn_enemy(tower["diff"])
+                enemy = self.spawn_enemy(tower["diff"], floor=f, avoid=prev_enemy)
             if not await self.battle(enemy, is_boss):
                 return
+            prev_enemy = enemy.name
         self.inv[tower["relic"]] = self.inv.get(tower["relic"], 0) + 1
         self.cleared.add(idx)
         self.save()
@@ -407,6 +439,15 @@ class Game:
     # ---------- старт ----------
 
     async def new_game(self):
+        self.scene("TITLE", "🏰 БАШНИ СУДЬБЫ")
+        self.say("Давным-давно из-под земли поднялись пять башен.")
+        self.say("В каждой спит осколок Древней Тьмы — реликвия, что")
+        self.say("держит мир в плену страха и мрака.")
+        self.say("")
+        self.say("Ты — последний странник, кому по силам дойти до вершин.")
+        self.say("Собери все пять реликвий и навсегда запечатай зло.")
+        self.say("")
+        await self.ask("Ты готов? (Enter)")
         name = (await self.ask("Имя героя: ")) or "Странник"
         self.scene("MAP")
         self.say("Выберите класс:")
@@ -480,8 +521,6 @@ class Game:
             else:
                 await self.new_game()
         else:
-            self.scene("TITLE", "🏰 БАШНИ СУДЬБЫ")
-            await self.ask("Нажмите Enter, чтобы начать...")
             await self.new_game()
 
         while True:

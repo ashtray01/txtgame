@@ -18,6 +18,20 @@ class TestCharacter(unittest.TestCase):
         self.assertEqual(dmg, 20)
         self.assertTrue(crit)
 
+    def test_pity_crit_after_ten_misses(self):
+        c = Character("Скелет", 30, (3, 3), luck=0, level=1)
+        for _ in range(9):
+            _, crit = c.hit()
+            self.assertFalse(crit)
+        dmg, crit = c.hit()  # 10-й удар без крита -> гарантированный крит
+        self.assertTrue(crit)
+        self.assertEqual(dmg, 6)
+
+    def test_pity_counter_resets_after_crit(self):
+        c = Character("Скелет", 30, (3, 3), luck=100, level=1)
+        c.hit()  # крит сбрасывает счётчик
+        self.assertEqual(c.hits_since_crit, 0)
+
     def test_take_reduces_hp(self):
         c = Character("Скелет", 30, (1, 1))
         c.take(10)
@@ -35,13 +49,13 @@ class TestHero(unittest.TestCase):
         h = Hero("Герой", "Воин")
         self.assertEqual(h.max_hp, 60)
         self.assertEqual(h.attack, (5, 10))
-        self.assertEqual(h.luck, 5)
+        self.assertEqual(h.luck, 8)
 
     def test_mage_stats(self):
         h = Hero("Герой", "Маг")
         self.assertEqual(h.max_hp, 35)
         self.assertEqual(h.attack, (8, 13))
-        self.assertEqual(h.luck, 8)
+        self.assertEqual(h.luck, 10)
 
     def test_level_up_at_threshold(self):
         h = Hero("Герой", "Воин")
@@ -68,7 +82,7 @@ class TestHero(unittest.TestCase):
         h.gain_exp(50)
         self.assertEqual(h.max_hp, hp_before + 10)
         self.assertEqual(h.attack, (atk_before[0] + 1, atk_before[1] + 2))
-        self.assertEqual(h.luck, 7)
+        self.assertEqual(h.luck, 10)
         self.assertEqual(h.hp, h.max_hp)
 
     def test_attack_total_includes_bonus(self):
@@ -80,9 +94,13 @@ class TestHero(unittest.TestCase):
         h = Hero("Герой", "Маг")
         h.block = True
         h.atk_bonus = 4
+        h.ability_cd = 3
+        h.hits_since_crit = 8
         h.reset_battle()
         self.assertFalse(h.block)
         self.assertEqual(h.atk_bonus, 0)
+        self.assertEqual(h.ability_cd, 0)
+        self.assertEqual(h.hits_since_crit, 0)
 
 
 if __name__ == "__main__":

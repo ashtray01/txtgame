@@ -10,11 +10,21 @@ class Character:
         self.attack = attack
         self.luck = luck
         self.block = False
+        # счётчик ходов без крита: гарантирует крит, если удача долго молчит
+        self.hits_since_crit = 0
 
     def hit(self):
         dmg = random.randint(*self.attack)
+        # Крит гарантирован на 10-й удар без него (страховка от "вечного невезения")
+        if self.hits_since_crit >= 9:
+            self.hits_since_crit = 0
+            return dmg * 2, True
         crit = random.randint(1, 100) <= self.luck
-        return dmg * 2 if crit else dmg, crit
+        if crit:
+            self.hits_since_crit = 0
+            return dmg * 2, True
+        self.hits_since_crit += 1
+        return dmg, False
 
     def take(self, dmg):
         self.hp -= dmg
@@ -38,8 +48,15 @@ class Hero(Character):
 
     def hit(self):
         dmg = random.randint(*self.attack_total)
+        if self.hits_since_crit >= 9:
+            self.hits_since_crit = 0
+            return dmg * 2, True
         crit = random.randint(1, 100) <= self.luck
-        return dmg * 2 if crit else dmg, crit
+        if crit:
+            self.hits_since_crit = 0
+            return dmg * 2, True
+        self.hits_since_crit += 1
+        return dmg, False
 
     def gain_exp(self, value):
         self.exp += value
@@ -58,3 +75,6 @@ class Hero(Character):
     def reset_battle(self):
         self.block = False
         self.atk_bonus = 0
+        # способность снова доступна в начале каждого боя
+        self.ability_cd = 0
+        self.hits_since_crit = 0
